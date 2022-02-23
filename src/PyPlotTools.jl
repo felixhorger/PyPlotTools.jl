@@ -1,12 +1,17 @@
 
 module PyPlotTools
 
-	import PyPlot
 	import PyCall
+	import PyPlot as plt
 
-	mpl_axes_grid = PyCall.pyimport("mpl_toolkits.axes_grid1")
-	rcParams = plt.PyDict(plt.matplotlib."rcParams")
-	rcParams["image.interpolation"] = "none"
+	function __init__()
+		global mpl_axes_grid = PyCall.pyimport("mpl_toolkits.axes_grid1")
+		global rcParams = PyCall.PyDict(plt.matplotlib."rcParams")
+	end
+
+	function default(key, value)
+		rcParams[key] = value
+	end
 
 	function activate_eps_output()
 		plt.ioff()
