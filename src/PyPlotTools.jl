@@ -12,6 +12,7 @@ module PyPlotTools
 		rcParams["image.interpolation"] = "none"
 		rcParams["image.origin"] = "lower"
 		rcParams["image.resample"] = false
+		rcParams["text.latex.preamble"] = "\\usepackage{amsmath}\\usepackage{siunitx}"
 		rcParams["savefig.bbox"] = "tight"
 		return
 	end
