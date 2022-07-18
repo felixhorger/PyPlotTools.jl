@@ -12,8 +12,14 @@ module PyPlotTools
 		rcParams["image.interpolation"] = "none"
 		rcParams["image.origin"] = "lower"
 		rcParams["image.resample"] = false
-		rcParams["text.latex.preamble"] = "\\usepackage{amsmath}\\usepackage{siunitx}"
+		rcParams["text.latex.preamble"] = """
+			\\usepackage{amsmath}
+			\\usepackage{amssymb}
+			\\usepackage{bm}
+			\\usepackage{siunitx}
+		"""
 		rcParams["savefig.bbox"] = "tight"
+		set_interactive()
 		return
 	end
 
@@ -23,6 +29,7 @@ module PyPlotTools
 		rcParams["lines.markeredgewidth"] = 1
 		rcParams["text.usetex"] = false
 		rcParams["font.family"] = "sans-serif"
+		rcParams["font.serif"] = "DejaVu Serif"
 		rcParams["backend"] = "qt5agg"
 		rcParams["figure.subplot.left"] = 0.1
 		rcParams["figure.subplot.right"] = 0.9
@@ -47,7 +54,7 @@ module PyPlotTools
 		return
 	end
 	
-	function add_colourbar(fig, ax, image; size="5%", pad=0.05, kwargs...)
+	function add_colourbar(fig, ax, image; size="5%", pad=0.05, phantom=false, kwargs...)
 		divider = mpl_axes_grid.make_axes_locatable(ax)
 		horizontal = false
 		if haskey(kwargs, :orientation) && kwargs[:orientation] == "horizontal"
@@ -57,6 +64,10 @@ module PyPlotTools
 			cax = divider.new_horizontal(;size, pad, pack_start=false) 
 		end
 		fig.add_axes(cax)
+		if phantom
+			cax.axis("off")
+			return cax, nothing
+		end
 		colourbar = plt.colorbar(image, cax=cax; kwargs...)
 		if horizontal
 			# Set ticks to top since it makes more sense to look at the colourbar
