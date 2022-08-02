@@ -40,8 +40,9 @@ module PyPlotTools
 
 	function set_eps()
 		plt.ioff()
-		rcParams["lines.linewidth"] = 2
-		rcParams["lines.markeredgewidth"] = 1.25
+		rcParams["lines.linewidth"] = 1
+		rcParams["lines.markeredgewidth"] = 1.0
+		rcParams["lines.markersize"] = 3.0
 		rcParams["text.usetex"] = true
 		rcParams["font.family"] = "serif"
 		rcParams["font.serif"] = "Computer Modern"
