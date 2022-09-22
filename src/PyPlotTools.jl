@@ -91,5 +91,15 @@ module PyPlotTools
 		)
 	end
 
+	function get_plot_colour_line(plot, type::Symbol; kwargs...)
+		if type == :violin
+			colour = vec(plot["bodies"][1].get_facecolor())
+		else
+			error("Unknown plot type")
+		end
+		patch = plt.matplotlib.lines.Line2D([], []; color=colour, kwargs...)
+		return patch
+	end
+
 end
 
