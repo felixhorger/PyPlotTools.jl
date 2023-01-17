@@ -17,7 +17,9 @@ module PyPlotTools
 			\\usepackage{amssymb}
 			\\usepackage{bm}
 			\\usepackage{siunitx}
+			\\DeclareSIUnit\\pixel{px}
 		"""
+		# TODO: Need to put this in config file ...
 		rcParams["savefig.bbox"] = "tight"
 		set_interactive()
 		return
@@ -38,7 +40,7 @@ module PyPlotTools
 		return
 	end
 
-	function set_eps()
+	function set_image(backend::String="ps")
 		plt.ioff()
 		rcParams["lines.linewidth"] = 1
 		rcParams["lines.markeredgewidth"] = 1.0
@@ -47,14 +49,14 @@ module PyPlotTools
 		rcParams["font.family"] = "serif"
 		rcParams["font.serif"] = "Computer Modern"
 		plt.matplotlib.cm.viridis.set_bad("w", 1)
-		rcParams["backend"] = "ps"
+		rcParams["backend"] = backend
 		rcParams["figure.subplot.left"] = 0
 		rcParams["figure.subplot.right"] = 1
 		rcParams["figure.subplot.bottom"] = 0
 		rcParams["figure.subplot.top"] = 1
 		return
 	end
-	
+
 	function add_colourbar(fig, ax, image; size="5%", pad=0.05, phantom=false, kwargs...)
 		divider = mpl_axes_grid.make_axes_locatable(ax)
 		horizontal = false
