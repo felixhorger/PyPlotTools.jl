@@ -5,6 +5,7 @@ module PyPlotTools
 	import PyPlot as plt
 
 	const latex_column = 6.52437527778 # inches
+	# use \usepackage{layouts} and \printinunitsof{in}\prntlen{\columnwidth} in latex to debug
 
 	function __init__()
 		global mpl_axes_grid = PyCall.pyimport("mpl_toolkits.axes_grid1")
@@ -57,26 +58,31 @@ module PyPlotTools
 		return
 	end
 
-	function add_colourbar(fig, ax, image; size="5%", pad=0.05, phantom=false, kwargs...)
+	function add_colourbar(fig, ax, image; size="5%", pad=0.05, horizontal=false, phantom=false, pack_start=false, kwargs...)
 		divider = mpl_axes_grid.make_axes_locatable(ax)
-		horizontal = false
-		if haskey(kwargs, :orientation) && kwargs[:orientation] == "horizontal"
-			cax = divider.new_vertical(;size, pad, pack_start=false) # Also: .append
-			horizontal = true
+		if horizontal
+			cax = divider.new_vertical(;size, pad, pack_start) # Also: .append
+			orientation = "horizontal"
+			pack_start=false
 		else
-			cax = divider.new_horizontal(;size, pad, pack_start=false) 
+			cax = divider.new_horizontal(;size, pad, pack_start)
+			orientation = "vertical"
 		end
 		fig.add_axes(cax)
 		if phantom
 			cax.axis("off")
 			return cax, nothing
 		end
-		colourbar = plt.colorbar(image, cax=cax; kwargs...)
+		colourbar = plt.colorbar(image; cax, orientation, kwargs...)
 		if horizontal
-			# Set ticks to top since it makes more sense to look at the colourbar
-			# first because looking at the image (What am I looking at?)
-			cax.xaxis.set_tick_params(top=true, bottom=false, labeltop=true, labelbottom=false)
-			cax.xaxis.set_label_position("top")
+			if !pack_start
+				# Set ticks to top since it makes more sense to look at the colourbar
+				# first because looking at the image (What am I looking at?)
+				cax.xaxis.set_tick_params(top=true, bottom=false, labeltop=true, labelbottom=false)
+				cax.xaxis.set_label_position("top")
+			end
+		else
+			# TODO rotate label
 		end
 		return cax, colourbar
 	end
@@ -102,6 +108,24 @@ module PyPlotTools
 		patch = plt.matplotlib.lines.Line2D([], []; color=colour, kwargs...)
 		return patch
 	end
+
+	transpose_subplots(axs) = [axs[i, j] for j = 1:size(axs, 2), i = 1:size(axs, 1)]
+
+	#function add_text(ax, m, vmin, vminround)
+	#	for i in axes(m, 1), j in axes(m, 2)
+	#		if m[i, j] > vmin
+	#			color = "black"
+	#		else
+	#			color = "white"
+	#		end
+	#		rounded = round(m[i, j], digits=1)
+	#		if rounded < vminround # %
+	#			ax.text(j, i, "$rounded"; fontsize=8, color, va="center", ha="center")
+	#		else
+	#			ax.text(j, i, "$(round(Int, m[i, j]))"; fontsize=8, color, va="center", ha="center")
+	#		end
+	#	end
+	#end
 
 end
 
