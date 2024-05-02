@@ -17,7 +17,7 @@ module PyPlotTools
 			\\usepackage{amsmath}
 			\\usepackage{amssymb}
 			\\usepackage{bm}
-			\\usepackage{siunitx}
+			\\usepackage[per-mode=symbol]{siunitx}
 			\\DeclareSIUnit\\pixel{px}
 		"""
 		# TODO: Need to put this in config file ...
@@ -129,3 +129,53 @@ module PyPlotTools
 
 end
 
+#arrs = (
+#	("Fourier", overlap_Fourier),
+#	("Jiang", overlap_Jiang),
+#	("Zhao", overlap_Zhao),
+#	("Koolstra", overlap_Koolstra),
+#	("Fast cycle", overlap_Felix)
+#)
+#fig, axs = plt.subplots(2, 5; sharex="col", sharey="row", figsize=(PyPlotTools.latex_column, 1.2))
+#plt.subplots_adjust(left=0, right=1, wspace=0.2, hspace=0.1)
+#xticks = (
+#	[1, 450, 900],
+#	[1, 500, 1000],
+#	[1, 200, 400],
+#	[1, 100, 240],
+#	[1, 400, 840],
+#)
+#d = 0.5
+#broken_kwargs = Dict(
+#	:marker => [(-1, -d), (1, d)],
+#	:markersize => 5,
+#	:linestyle => "none",
+#	:color => "k",
+#	:mec => "k",
+#	:mew => 1,
+#	:clip_on => false
+#)
+#for (i, (title, a)) in enumerate(arrs)
+#	axs[1, i].spines["bottom"].set_visible(false)
+#	axs[2, i].spines["top"].set_visible(false)
+#	amin, imin = findmin(a[2])
+#	axs[1, i].tick_params(bottom=false)
+#	axs[1, i].set_ylim([1e12, 1e20])
+#	axs[2, i].set_ylim([1, 1e6])
+#	num_time = length(a[2])
+#	for l = 1:2, j = 1:5
+#		axs[l, i].plot(1:num_time, a[1]; color="tab:blue", zorder=1)
+#		axs[l, i].plot(1:num_time, a[2]; color="tab:orange", zorder=1)
+#		axs[l, i].set_yscale("log")
+#		axs[l, i].axvline(floor.(Int, range(1, num_time; length=6+1)[1:5])[j]; zorder=0, color="tab:green", linestyle="dashed", linewidth=0.75)
+#		#axs[l, i].plot(imin, amin, "o"; markeredgewidth=0.75, markersize=3, color="tab:red")
+#	end
+#	axs[1, i].set_title(title; fontdict=Dict("fontsize"=>10))
+#	axs[2, i].set_xticks(xticks[i])
+#	axs[2, i].set_xlabel("\$t\$ [index]"; fontdict=Dict("fontsize"=>10))
+#	axs[1, i].plot([0, 1], [0, 0], transform=axs[1, i].transAxes; broken_kwargs...)
+#	axs[2, i].plot([0, 1], [1, 1], transform=axs[2, i].transAxes; broken_kwargs...)
+#end
+#axs[1, 1].set_ylabel("Condition number")
+#plt.savefig("conditioning_sampling.eps")
+#plt.close(fig)
