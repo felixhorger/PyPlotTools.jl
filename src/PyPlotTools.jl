@@ -111,6 +111,21 @@ module PyPlotTools
 
 	transpose_subplots(axs) = [axs[i, j] for j = 1:size(axs, 2), i = 1:size(axs, 1)]
 
+
+	# x[dimensions x1 x2, vals index]
+	function plot_nonuniform(ax, x::AbstractMatrix{<: Real}, vals::AbstractVector{<: Real})
+		@assert size(x, 1) == 2 "Only supports 2D"
+		@views tri = plt.matplotlib.tri.Triangulation(x[1, :], x[2, :])
+		itp_func = plt.matplotlib.tri.CubicTriInterpolator(tri, vals)
+		itp = itp_func(x[1, :], x[2, :])
+
+		ax.tricontourf(tri, itp)
+		ax.triplot(tri, "r."; alpha=0.2)
+		return
+	end
+
+
+
 	#function add_text(ax, m, vmin, vminround)
 	#	for i in axes(m, 1), j in axes(m, 2)
 	#		if m[i, j] > vmin
