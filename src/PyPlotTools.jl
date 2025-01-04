@@ -44,7 +44,7 @@ module PyPlotTools
 	function set_image(backend::String="ps")
 		plt.ioff()
 		rcParams["lines.linewidth"] = 1
-		rcParams["lines.markeredgewidth"] = 1.0
+		rcParams["lines.markeredgewidth"] = 1.0 # TODO: might change this? makes the + too thick
 		rcParams["lines.markersize"] = 3.0
 		rcParams["text.usetex"] = true
 		rcParams["font.family"] = "serif"
@@ -58,7 +58,7 @@ module PyPlotTools
 		return
 	end
 
-	function add_colourbar(fig, ax, image; size="5%", pad=0.05, horizontal=false, phantom=false, pack_start=false, kwargs...)
+	function add_colourbar(fig, ax, image; size="5%", aspect=1, pad=0.05, horizontal=false, phantom=false, pack_start=false, kwargs...)
 		divider = mpl_axes_grid.make_axes_locatable(ax)
 		if horizontal
 			cax = divider.new_vertical(;size, pad, pack_start) # Also: .append
@@ -78,6 +78,7 @@ module PyPlotTools
 			if !pack_start
 				# Set ticks to top since it makes more sense to look at the colourbar
 				# first because looking at the image (What am I looking at?)
+				# TODO: change this to bottom, or add flag
 				cax.xaxis.set_tick_params(top=true, bottom=false, labeltop=true, labelbottom=false)
 				cax.xaxis.set_label_position("top")
 			end
@@ -113,15 +114,51 @@ module PyPlotTools
 
 
 	# x[dimensions x1 x2, vals index]
-	function plot_nonuniform(ax, x::AbstractMatrix{<: Real}, vals::AbstractVector{<: Real})
+	function plot_nonuniform(ax, x::AbstractMatrix{<: Real}, vals::AbstractVector{<: Real}; kwargs...)
 		@assert size(x, 1) == 2 "Only supports 2D"
 		@views tri = plt.matplotlib.tri.Triangulation(x[1, :], x[2, :])
 		itp_func = plt.matplotlib.tri.CubicTriInterpolator(tri, vals)
 		itp = itp_func(x[1, :], x[2, :])
 
-		ax.tricontourf(tri, itp)
-		ax.triplot(tri, "r."; alpha=0.2)
+		ax.tricontourf(tri, itp; kwargs...)
+		#ax.triplot(tri, "r."; alpha=0.2)
 		return
+	end
+
+
+	function centre_indices(shape::Integer, centre_size::Integer)
+		centre = shape ÷ 2 # Actually the centre is at this plus one
+		half = centre_size ÷ 2
+		lower = centre - half + 1
+		upper = centre + half + mod(centre_size, 2)
+		return lower:upper
+	end
+	function plot_orthogonal(ax, x::AbstractArray{<: T, 3}, slices::NTuple{3, Integer}; as_alpha=false, bubbles=false, kwargs...) where T
+		# (1, 2), (1, 3), (2, 3)
+		shape = size(x)
+		h = max(shape[1], shape[2])
+		image = zeros(T, h, shape[2] + 2 * shape[3])
+
+		if bubbles
+			i = size(x, 2):-1:1
+			slices = (slices[1], size(x, 2) - slices[2], slices[3])
+		else
+			i = 1:size(x, 2)
+		end
+
+		@views begin
+			image[centre_indices.((h, shape[2]), (shape[1], shape[2]))...] .= x[:, i, slices[3]]
+			image[centre_indices(h, shape[1]), (1:shape[3]) .+ shape[2]] .= x[:, slices[2], :]
+			image[centre_indices(h, shape[2]), (1:shape[3]) .+ shape[2] .+ shape[3]] .= x[slices[1], :, :]
+		end
+
+		if as_alpha
+			mini, maxi = extrema(image)
+			image .= (image .- mini) ./ (maxi - mini)
+			return ax.imshow(ones(size(image)); alpha=image, kwargs..., vmin=0, vmax=1)
+		else
+			return ax.imshow(image; kwargs...)
+		end
 	end
 
 
@@ -194,3 +231,34 @@ end
 #axs[1, 1].set_ylabel("Condition number")
 #plt.savefig("conditioning_sampling.eps")
 #plt.close(fig)
+
+
+
+
+# Another one DJ Khaled
+# fig, ax = plt.subplots(2, 1; figsize=(0.5PyPlotTools.latex_column, 3.5), sharex=true)
+# ax[2].bar(1:5, errors; width=0.3, color="tab:blue")
+# ax[2].set_xticks(1:5)
+# ax[2].set_yticks([0, 0.05, 0.1])
+# ax[2].set_ylim([0, 0.12])
+# ax[2].set_xticklabels(("Random", "Optimised", "Smooth", "CAIPI", "CASPR"); fontsize=10)
+# ax[2].set_ylabel("NRMSE", y=1)
+# #ax[2].axhline(0.1; zorder=0, linewidth=0.66, linestyle=(0, (3, 5)), color="black")
+# ax[1].bar(1:5, errors; width=0.3, color="tab:blue")
+# ax[1].set_yticks([1.3, 1.35, 1.4])
+# ax[1].set_ylim([1.25, 1.42])
+# ax[1].set_xticklabels(("Random", "Optimised", "Smooth", "CAIPI", "CASPR"); fontsize=10)
+# ax[1].spines["bottom"].set_visible(false)
+# ax[2].spines["top"].set_visible(false)
+# ax[1].xaxis.tick_top()
+# ax[2].tick_params(labeltop=false)
+# ax[2].xaxis.tick_bottom()
+# #
+# d = 0.015 # how big to make the diagonal lines in axes coordinates arguments to pass to plot, just so we don't keep repeating them
+# ax[1].plot((-d, +d), (-d, +d); transform=ax[1].transAxes, color="k", clip_on=false)
+# ax[1].plot((1 - d, 1 + d), (-d, +d); transform=ax[1].transAxes, color="k", clip_on=false) # top-right diagonal
+# ax[2].plot((-d, +d), (1 - d, 1 + d); transform=ax[2].transAxes, color="k", clip_on=false)  # bottom-left diagonal
+# ax[2].plot((1 - d, 1 + d), (1 - d, 1 + d); transform=ax[2].transAxes, color="k", clip_on=false)  # bottom-right diagonal
+# plt.savefig("barplot.eps")
+# plt.close(fig)
+
